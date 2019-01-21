@@ -24,8 +24,8 @@ namespace petChoicePerks
             //Game1.player.addBuffAttributes(int[] buffAttributes);                       
 
             Helper.Events.GameLoop.SaveLoaded += this.SaveLoaded;
-            Helper.Events.GameLoop.DayStarted += this.TimeEvents_AfterDayStarted;            
-            Helper.Events.GameLoop.UpdateTicked += this.UpdateTicked;
+            Helper.Events.GameLoop.DayStarted += this.TimeEvents_AfterDayStarted;
+            Helper.Events.Input.ButtonReleased += this.ButtonReleased;
         }
 
         /*********
@@ -75,10 +75,10 @@ namespace petChoicePerks
             buffDuration = buffDuration / 10 * 7000;
         }
 
-        private void UpdateTicked(object sender, UpdateTickedEventArgs e)
+        // Check if the player just pet his ... pet
+        private void ButtonReleased(object sender, ButtonReleasedEventArgs e)
         {
-            // Check every second
-            if (Context.IsWorldReady && !buffApplied && e.IsMultipleOf(60))
+            if(Context.IsWorldReady && e.Button.IsActionButton() && !buffApplied)
             {
                 // Find the player's pet
                 if (Game1.player.hasPet())
@@ -103,6 +103,6 @@ namespace petChoicePerks
                     }
                 }
             }
-        }
+        }        
     }
 }
