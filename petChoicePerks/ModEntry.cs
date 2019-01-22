@@ -6,6 +6,8 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
+using Harmony;
+using System.Reflection;
 
 namespace petChoicePerks
 {
@@ -16,16 +18,33 @@ namespace petChoicePerks
         int buffDuration;
         bool buffApplied;
 
+        public static IMonitor ModMonitor;
+        public static int PreviousDate = 0;
+
         /*********
         ** Public methods
         *********/
         public override void Entry(IModHelper helper)
         {
+            ModMonitor = this.Monitor;
+
             //Game1.player.addBuffAttributes(int[] buffAttributes);                       
 
             Helper.Events.GameLoop.SaveLoaded += this.SaveLoaded;
             Helper.Events.GameLoop.DayStarted += this.TimeEvents_AfterDayStarted;
             Helper.Events.Input.ButtonReleased += this.ButtonReleased;
+
+            // Create a new Harmony instance for patching source code
+            HarmonyInstance harmony = HarmonyInstance.Create(this.ModManifest.UniqueID);
+
+            // Get the method we want to patch
+            MethodInfo targetMethod = AccessTools.Method(typeof(Farm), nameof(Farm.addCrows));
+
+            // Get the patch that was created
+            MethodInfo prefix = AccessTools.Method(typeof(ModEntry), nameof(ModEntry.Prefix));
+
+            // Apply the patch
+            harmony.Patch(targetMethod, prefix: new HarmonyMethod(prefix));
         }
 
         /*********
@@ -103,6 +122,25 @@ namespace petChoicePerks
                     }
                 }
             }
-        }        
+        }
+        
+        private static bool Prefix(ref Farm __instance)
+        {
+            // Check if player has a cat when day changes
+            bool hasCat = false;
+
+            if(ModEntry.PreviousDate != Game1.dayOfMonth)
+            {
+                ModEntry.PreviousDate = Game1.dayOfMonth;                
+                hasCat = Game1.player.catPerson && Game1.player.hasPet();
+            }            
+
+            if (hasCat)
+                ModEntry.ModMonitor.Log("Player has a cat. No crows will spawn.");
+            else
+                ModEntry.ModMonitor.Log("Player doesn't have a cat. Crows will spawn.");
+
+            return !hasCat;
+        }
     }
 }
