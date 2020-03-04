@@ -68,7 +68,7 @@ namespace petChoicePerks
             if (!Context.IsWorldReady)
                 return;
 
-            double luck = Game1.dailyLuck;
+            double luck = Game1.player.DailyLuck;
             //this.Monitor.Log("Player's luck: " + luck);
 
             // Reset daily buff
@@ -161,10 +161,11 @@ namespace petChoicePerks
                 // Find the player's pet
                 if (Game1.player.hasPet())
                 {
-                    StardewValley.Characters.Pet thePet = (StardewValley.Characters.Pet)Game1.getCharacterFromName(Game1.player.getPetName());
+                    Farmer farmer = Game1.player;
+                    StardewValley.Characters.Pet thePet = farmer.getPet();
 
                     // Was it pet today (ie. just now)? If so, apply the buff
-                    if (this.Helper.Reflection.GetField<bool>(thePet, "wasPetToday").GetValue())
+                    if (thePet.lastPetDay.ContainsKey(farmer.uniqueMultiplayerID) && thePet.lastPetDay[farmer.uniqueMultiplayerID] == Game1.Date.TotalDays)
                     {
                         if (Game1.player.catPerson)
                         {
