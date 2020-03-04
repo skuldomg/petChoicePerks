@@ -68,7 +68,7 @@ namespace petChoicePerks
             if (!Context.IsWorldReady)
                 return;
 
-            double luck = Game1.dailyLuck;
+            double luck = Game1.player.DailyLuck;
             //this.Monitor.Log("Player's luck: " + luck);
 
             // Reset daily buff
